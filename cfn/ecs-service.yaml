@@ -19,6 +19,7 @@ Resources:
   FargateService:
     Type: AWS::ECS::Service
     Properties:
+      ServiceName: !Sub "${Name}-service"
       Cluster:
         Fn::ImportValue:
           !Sub "${Name}-ClusterName"
@@ -37,7 +38,7 @@ Resources:
               - Fn::ImportValue:
                   Fn::Sub: ${Name}-Subnets
       LoadBalancers:
-        - ContainerName: animal-app
+        - ContainerName: !Sub "${Name}-container"
           ContainerPort: 80
           TargetGroupArn:
             Fn::ImportValue:

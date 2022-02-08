@@ -7,6 +7,7 @@ Parameters:
     Type: String
 
 Resources:
+
   Repository:
     Type: AWS::ECR::Repository
     Properties:
@@ -31,7 +32,7 @@ Resources:
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /ecs/${Name}
+      LogGroupName: !Sub /ecs/${Name}-cluster
 
   Cluster:
     Type: AWS::ECS::Cluster
