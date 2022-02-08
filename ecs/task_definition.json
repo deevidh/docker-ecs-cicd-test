@@ -1,0 +1,91 @@
+{
+    "ipcMode": null,
+    "executionRoleArn": "arn:aws:iam::593130735504:role/hello-world-TaskExecutionRole",
+    "containerDefinitions": [
+      {
+        "dnsSearchDomains": [],
+        "environmentFiles": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "secretOptions": [],
+          "options": {
+            "awslogs-group": "/ecs/hello-world-cluster",
+            "awslogs-region": "eu-west-2",
+            "awslogs-stream-prefix": "hello-world-task"
+          }
+        },
+        "entryPoint": [
+        ],
+        "portMappings": [
+          {
+            "hostPort": 80,
+            "protocol": "tcp",
+            "containerPort": 80
+          }
+        ],
+        "command": [],
+        "linuxParameters": null,
+        "cpu": 0,
+        "environment": [],
+        "resourceRequirements": null,
+        "ulimits": [],
+        "dnsServers": [],
+        "mountPoints": [
+          {
+            "readOnly": null,
+            "containerPath": "/var/www/my-vol",
+            "sourceVolume": "my-vol"
+          }
+        ],
+        "workingDirectory": null,
+        "secrets": [],
+        "dockerSecurityOptions": [],
+        "memory": 256,
+        "memoryReservation": null,
+        "volumesFrom": [],
+        "stopTimeout": null,
+        "image": null,
+        "startTimeout": null,
+        "firelensConfiguration": null,
+        "dependsOn": null,
+        "disableNetworking": null,
+        "interactive": null,
+        "healthCheck": null,
+        "essential": true,
+        "links": [],
+        "hostname": null,
+        "extraHosts": [],
+        "pseudoTerminal": null,
+        "user": null,
+        "readonlyRootFilesystem": null,
+        "dockerLabels": {},
+        "systemControls": [],
+        "privileged": null,
+        "name": "hello-world-container"
+    }
+    ],
+    "placementConstraints": [],
+    "memory": "512",
+    "taskRoleArn": null,
+    "family": "hello-world-task",
+    "pidMode": null,
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": null,
+    "cpu": "256",
+    "inferenceAccelerators": null,
+    "proxyConfiguration": null,
+    "volumes": [
+      {
+        "fsxWindowsFileServerVolumeConfiguration": null,
+        "efsVolumeConfiguration": null,
+        "name": "my-vol",
+        "host": {
+          "sourcePath": null
+        },
+        "dockerVolumeConfiguration": null
+      }
+    ]
+  }

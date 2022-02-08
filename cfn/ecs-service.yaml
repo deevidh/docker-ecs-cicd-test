@@ -1,0 +1,48 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  Name:
+    Type: String
+
+  TaskDefinitionFamily:
+    Type: String
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+
+
+Resources:
+
+  FargateService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Sub "${Name}-ClusterName"
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${TaskDefinitionFamily}"
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${Name}-LoadBalancerSG"
+          Subnets:
+            Fn::Split:
+              - ","
+              - Fn::ImportValue:
+                  Fn::Sub: ${Name}-Subnets
+      LoadBalancers:
+        - ContainerName: animal-app
+          ContainerPort: 80
+          TargetGroupArn:
+            Fn::ImportValue:
+              Fn::Sub: ${Name}-LoadBalancerTG
+
+Outputs:
+  Service:
+    Value: !Ref FargateService
