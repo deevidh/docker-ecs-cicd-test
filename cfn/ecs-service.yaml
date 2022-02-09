@@ -24,6 +24,7 @@ Resources:
         Fn::ImportValue:
           !Sub "${Name}-ClusterName"
       DesiredCount: !Ref DesiredCount
+      # If you provide the ARN without a revision number then the _latest_ is used (this isn't documented behaviour, but it works!)
       TaskDefinition: !Sub "arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:task-definition/${TaskDefinitionFamily}"
       LaunchType: FARGATE
       NetworkConfiguration:

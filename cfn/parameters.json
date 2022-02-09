@@ -4,6 +4,7 @@
       "VpcCIDR": "10.0.0.0/16",
       "Subnet1CIDR": "10.0.1.0/24",
       "Subnet2CIDR": "10.0.2.0/24",
-      "TaskDefinitionFamily": "hello-world-task"
+      "TaskDefinitionFamily": "hello-world-task",
+      "DesiredCount": "2"
     }
 }
