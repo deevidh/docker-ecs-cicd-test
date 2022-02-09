@@ -4,6 +4,8 @@
 - `ecs-cluster.yaml` Creates an ECS cluster and supporting resources (ECR, security groups, IAM roles, ALB)
 - `ecs-service.yaml` Creates an ECS service. This depends on the task definition having been created by the CI/CD pipeline.
 
+Some of the parameters you may want to tweak can be defined in: `parameters.json`
+
 ## Deployment
 
 You can deploy the CFN using the AWS CLI as follows:
