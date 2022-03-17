@@ -118,11 +118,12 @@ jobs:
         ls ${{ env.ECS_TASK_DEFINITION }}.rendered
         cat ${{ env.ECS_TASK_DEFINITION }}.rendered
 
+
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}.rendered
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
 
