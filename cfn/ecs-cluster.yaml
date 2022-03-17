@@ -6,6 +6,9 @@ Parameters:
   Name:
     Type: String
 
+  TaskDefinitionFamily:
+    Type: String
+
 Resources:
 
   Repository:
@@ -18,7 +21,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Path: /
-      RoleName: !Sub "${Name}-TaskExecutionRole"
+      RoleName: !Sub "${TaskDefinitionFamily}-TaskExecutionRole"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:

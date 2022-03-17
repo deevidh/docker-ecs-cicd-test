@@ -37,6 +37,7 @@ env:
   ECR_REPOSITORY: hello-world-ecr
   ECS_SERVICE: hello-world-service
   ECS_CLUSTER: hello-world-cluster
+  ECS_TASK: hello-world-task
   ECS_TASK_DEFINITION: ecs/task_definition.json
   CONTAINER_NAME: hello-world-container
 
@@ -74,6 +75,13 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Render task definition from template
+      id: render-task-def
+      uses: danielr1996/envsubst-action@1.0.0
+      with:
+        input: {{ env.ECS_TASK_DEFINITION }}
+        output: {{ env.ECS_TASK_DEFINITION }} # Same as input, renders the task definition file in place
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
