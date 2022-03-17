@@ -52,12 +52,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+#    - name: Set environment variables
+#      id: set-env-vars
+#      run: |
+#        if [[ GITHUB_REF_NAME -eq "main"]]; then
+#          echo "Setting up env vars for Prod"
+#          APPLICATION_ENV=prod
+#        elif [[ GITHUB_REF_NAME -eq "staging"]]; then
+#          echo "Setting up env vars for Staging"
+#          APPLICATION_ENV=staging
+#        else
+#          echo "ERROR - Unrecognised git ref. Couldn't set env vars."
+#          exit 1
+#        fi
+
     - name: Configure AWS credentials
+#      id: aws-login
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
+
+#    - name: Print all environment variables
+#      id: print-env-vars
+#      run: |
+#        env
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -80,6 +100,8 @@ jobs:
     - name: Render task definition from template
       id: render-task-def
       uses: danielr1996/envsubst-action@1.0.0
+#      env:
+#        AWS_REGION: ${{ steps.aws-login.aws-account-id }}
       with:
         input: ${{ env.ECS_TASK_DEFINITION }}
         output: ${{ env.ECS_TASK_DEFINITION }} # Same as input, renders the task definition file in place
