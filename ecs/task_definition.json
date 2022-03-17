@@ -1,6 +1,6 @@
 {
     "ipcMode": null,
-    "executionRoleArn": "arn:aws:iam::593130735504:role/${ECS_TASK}-TaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::593130735504:role/hello-world-TaskExecutionRole",
     "containerDefinitions": [
       {
         "dnsSearchDomains": [],
@@ -9,9 +9,9 @@
           "logDriver": "awslogs",
           "secretOptions": [],
           "options": {
-            "awslogs-group": "/ecs/${ECS_CLUSTER}",
+            "awslogs-group": "/ecs/hello-world-cluster",
             "awslogs-region": "eu-west-2",
-            "awslogs-stream-prefix": "${ECS_TASK}"
+            "awslogs-stream-prefix": "hello-world-task"
           }
         },
         "entryPoint": [
@@ -61,13 +61,13 @@
         "dockerLabels": {},
         "systemControls": [],
         "privileged": null,
-        "name": "${CONTAINER_NAME}"
+        "name": "hello-world-container"
     }
     ],
     "placementConstraints": [],
     "memory": "512",
     "taskRoleArn": null,
-    "family": "${ECS_TASK}",
+    "family": "hello-world-task",
     "pidMode": null,
     "requiresCompatibilities": [
       "FARGATE"
