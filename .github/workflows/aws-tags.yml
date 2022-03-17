@@ -84,6 +84,11 @@ jobs:
         input: ${{ env.ECS_TASK_DEFINITION }}
         output: ${{ env.ECS_TASK_DEFINITION }} # Same as input, renders the task definition file in place
 
+    - name: Debug task-def
+      id: debug-task-def
+      run: |
+        cat ${{ env.ECS_TASK_DEFINITION }}
+
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
