@@ -26,7 +26,7 @@
 
 name: Build and Deploy to Amazon ECS
 
-# Trigger build only for tags
+# Trigger build only for main and staging branches
 on:
   push:
     branches:
@@ -117,13 +117,13 @@ jobs:
         cat ${{ env.ECS_TASK_DEFINITION }}
         ls ${{ env.ECS_TASK_DEFINITION }}.rendered
         cat ${{ env.ECS_TASK_DEFINITION }}.rendered
-
+        diff ${{ env.ECS_TASK_DEFINITION }} ${{ env.ECS_TASK_DEFINITION }}.rendered
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        task-definition: ecs/task_definition.json.rendered
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
 

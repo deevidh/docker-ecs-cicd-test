@@ -1,6 +1,6 @@
 {
     "ipcMode": null,
-    "executionRoleArn": "arn:aws:iam::593130735504:role/hello-world-TaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::593130735504:role/hello-world-task-TaskExecutionRole",
     "containerDefinitions": [
       {
         "dnsSearchDomains": [],
