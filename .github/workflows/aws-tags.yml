@@ -58,9 +58,13 @@ jobs:
 #        if [[ GITHUB_REF_NAME -eq "main"]]; then
 #          echo "Setting up env vars for Prod"
 #          APPLICATION_ENV=prod
+#          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+#          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
 #        elif [[ GITHUB_REF_NAME -eq "staging"]]; then
 #          echo "Setting up env vars for Staging"
 #          APPLICATION_ENV=staging
+#          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID_PROD_STAGING }}
+#          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY_PROD_STAGING }}
 #        else
 #          echo "ERROR - Unrecognised git ref. Couldn't set env vars."
 #          exit 1
@@ -97,6 +101,12 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+    - name: Debug task-def
+      id: debug-task-def
+      run: |
+        ls ${{ env.ECS_TASK_DEFINITION }}
+        cat ${{ env.ECS_TASK_DEFINITION }}
+
     - name: Render task definition from template
       id: render-task-def
       uses: danielr1996/envsubst-action@1.0.0
@@ -106,9 +116,10 @@ jobs:
         input: ${{ env.ECS_TASK_DEFINITION }}
         output: ${{ env.ECS_TASK_DEFINITION }} # Same as input, renders the task definition file in place
 
-    - name: Debug task-def
-      id: debug-task-def
+    - name: Debug task-def 2
+      id: debug-task-def2
       run: |
+        ls ${{ env.ECS_TASK_DEFINITION }}
         cat ${{ env.ECS_TASK_DEFINITION }}
 
     - name: Fill in the new image ID in the Amazon ECS task definition
