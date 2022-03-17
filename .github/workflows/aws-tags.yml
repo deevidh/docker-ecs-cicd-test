@@ -29,8 +29,9 @@ name: Build and Deploy to Amazon ECS
 # Trigger build only for tags
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - staging
+      - main
 
 env:
   AWS_REGION: eu-west-2
