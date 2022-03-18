@@ -107,21 +107,21 @@ jobs:
 #      env:
 #        AWS_REGION: ${{ steps.aws-login.aws-account-id }}
       with:
-        input: ${{ env.ECS_TASK_DEFINITION }}
-        output: ${{ env.ECS_TASK_DEFINITION }}.rendered.json
+        input: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}
+        output: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
 
     - name: Debug task-def 2
       id: debug-task-def2
       run: |
-        cat ${{ env.ECS_TASK_DEFINITION }}
-        cat ${{ env.ECS_TASK_DEFINITION }}.rendered.json
-        diff ${{ env.ECS_TASK_DEFINITION }} ${{ env.ECS_TASK_DEFINITION }}.rendered.json
+        cat ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}
+        cat ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
+        diff ${{ env.ECS_TASK_DEFINITION_TEMPLATE }} ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}.rendered.json
+        task-definition: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
 
