@@ -41,9 +41,6 @@ env:
   ECS_TASK: hello-world-task
   ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition_template.json
   CONTAINER_NAME: hello-world-container
-  CONTAINER_VARS: |
-    ENVIRONMENT=staging
-    FOO=bar
 
 jobs:
   deploy:
@@ -62,12 +59,18 @@ jobs:
           echo "Setting up env vars for Prod"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          #echo "CONTAINER_VARS=\"$(cat ecs/prod_container_env_vars)\"" >> $GITHUB_ENV
+          # Setting multi-line string as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
+          $(cat ecs/staging_container_env_vars) >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         elif [[ $GITHUB_REF_NAME == "staging" ]]; then
           echo "Setting up env vars for Staging"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          #echo "CONTAINER_VARS=\"$(cat ecs/staging_container_env_vars)\"" >> $GITHUB_ENV
+          # Setting multi-line string as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
+          $(cat ecs/staging_container_env_vars) >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         else
           echo "ERROR - Unrecognised git ref. Couldn't set env vars."
           exit 1
