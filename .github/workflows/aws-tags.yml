@@ -64,7 +64,7 @@ jobs:
           echo "Setting up env vars for Staging"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "CONTAINER_VARS=`"$(cat ecs/staging_container_env_vars)`"" >> $GITHUB_ENV
+          echo "CONTAINER_VARS=\"$(cat ecs/staging_container_env_vars)\"" >> $GITHUB_ENV
         else
           echo "ERROR - Unrecognised git ref. Couldn't set env vars."
           exit 1
