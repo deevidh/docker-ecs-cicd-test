@@ -39,14 +39,13 @@ env:
   ECS_SERVICE: hello-world-service
   ECS_CLUSTER: hello-world-cluster
   ECS_TASK: hello-world-task
-  ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition.json
+  ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition_template.json
   CONTAINER_NAME: hello-world-container
 
 jobs:
   deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
     - name: Checkout
@@ -60,28 +59,30 @@ jobs:
           APPLICATION_ENV=prod
           AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          CONTAINER_VARS=$(cat ecs/prod_container_env_vars)
         elif [[ $GITHUB_REF_NAME == "staging" ]]; then
           echo "Setting up env vars for Staging"
           APPLICATION_ENV=staging
           AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID_PROD }}
           AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY_PROD }}
+          CONTAINER_VARS=$(cat ecs/staging_container_env_vars)
         else
           echo "ERROR - Unrecognised git ref. Couldn't set env vars."
           exit 1
         fi
 
+    - name: Print all environment variables
+      id: print-env-vars
+      run: |
+        env
+
     - name: Configure AWS credentials
       id: aws-login
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-
-#    - name: Print all environment variables
-#      id: print-env-vars
-#      run: |
-#        env
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -117,6 +118,7 @@ jobs:
         task-definition: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
+        environment-variables: ${{ env.CONTAINER_VARS }} # Loaded from file in repo
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
