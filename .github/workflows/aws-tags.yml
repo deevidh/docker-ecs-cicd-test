@@ -105,7 +105,7 @@ jobs:
       id: render-task-def
       uses: danielr1996/envsubst-action@1.0.0
       env:
-        AWS_ACCOUNT_ID: ${{ steps.aws-login.aws-account-id }}
+        AWS_ACCOUNT_ID: ${{ steps.aws-login.outputs.aws-account-id }}
       with:
         input: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}
         output: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
