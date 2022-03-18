@@ -39,7 +39,7 @@ env:
   ECS_SERVICE: hello-world-service
   ECS_CLUSTER: hello-world-cluster
   ECS_TASK: hello-world-task
-  ECS_TASK_DEFINITION: ecs/task_definition.json
+  ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition.json
   CONTAINER_NAME: hello-world-container
 
 jobs:
@@ -108,22 +108,20 @@ jobs:
 #        AWS_REGION: ${{ steps.aws-login.aws-account-id }}
       with:
         input: ${{ env.ECS_TASK_DEFINITION }}
-        output: ${{ env.ECS_TASK_DEFINITION }}.rendered
+        output: ${{ env.ECS_TASK_DEFINITION }}.rendered.json
 
     - name: Debug task-def 2
       id: debug-task-def2
       run: |
-        ls ${{ env.ECS_TASK_DEFINITION }}
         cat ${{ env.ECS_TASK_DEFINITION }}
-        ls ${{ env.ECS_TASK_DEFINITION }}.rendered
-        cat ${{ env.ECS_TASK_DEFINITION }}.rendered
-        diff ${{ env.ECS_TASK_DEFINITION }} ${{ env.ECS_TASK_DEFINITION }}.rendered
+        cat ${{ env.ECS_TASK_DEFINITION }}.rendered.json
+        diff ${{ env.ECS_TASK_DEFINITION }} ${{ env.ECS_TASK_DEFINITION }}.rendered.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ecs/task_definition.json
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}.rendered.json
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
 
