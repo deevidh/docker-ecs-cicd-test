@@ -2,14 +2,16 @@
 # definition (with the old container image) and using it to update the ECS service. This could be used for rolling back deployments
 # to a previous container image.
 #
-# NOTE: When triggering this workflow, you must specify a git ref. This will determine which version of the GitHub Workflow file
-# will be used to execute the Workflow. If you have made changes to this workflow file, then you must be extremely careful when
-# using this method to roll back.
+# NOTE: When triggering this workflow, you must first specify a git ref. This is used to determine which GitHub Workflow file to use
+# to run the workflow. In most cases this should be the same as the environment you're re-deploying, but not necessarily. If you
+# have made changes to the workflow file, then you must be extremely careful and analyse whether using this method to roll back
+# is appropriate.
 #
-# When manually triggering the workflow, you will be prompted to specify the environment you wish to deploy to, and the commit ID
-# you wish to redeploy (it is assumed that this commit ID has previously been built successfully and that a container image with
-# this tag still exists in ECR). The workflow will build and deploy a new task definition which is rendered using the previously-built
-# container image, and task definition template file and variables which were present in the repo at the commit ID you specify.
+# After choosing the git ref for triggering the workflow, you will be prompted to specify the _environment_ you wish to deploy to,
+# and the commit ID / container ID you wish to redeploy (it is assumed that this commit ID has previously been built successfully
+# and that a container image with this tag still exists in ECR). The workflow will build and deploy a new task definition which is
+# rendered using the previously-built container image, and task definition template file and variables which were present in the
+# repo at the commit ID you specify.
 #
 # The requirements to use this workflow are the same as those documented in aws-deploy.yml.
 
