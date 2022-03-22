@@ -1,72 +1,118 @@
-# This workflow can be triggered manually to deploy a new task definition to ECS using a pre-existing container image.
-# The container image is assumed to already exist in ECR, and it's name should match the current git tag.
+# This workflow can be triggered manually to allow a previously built container image to be redeployed by creating a new task
+# definition (with the old container image) and using it to update the ECS service. This could be used for rolling back deployments
+# to a previous container image.
 #
-# This workflow is useful for rolling back an ECS service to a previously build container image.
+# NOTE: When triggering this workflow, you must specify a git ref. This will determine which version of the GitHub Workflow file
+# will be used to execute the Workflow. If you have made changes to this workflow file, then you must be extremely careful when
+# using this method to roll back.
 #
-# To use this workflow, you will need to complete the following set-up steps:
+# When manually triggering the workflow, you will be prompted to specify the environment you wish to deploy to, and the commit ID
+# you wish to redeploy (it is assumed that this commit ID has previously been built successfully and that a container image with
+# this tag still exists in ECR). The workflow will build and deploy a new task definition which is rendered using the previously-built
+# container image, and task definition template file and variables which were present in the repo at the commit ID you specify.
 #
-# 1. Create an ECR repository to store your images.
-#    For example: `aws ecr create-repository --repository-name my-ecr-repo --region us-east-2`.
-#    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
-#    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
-#
-# 2. Create an ECS task definition, an ECS cluster, and an ECS service.
-#    For example, follow the Getting Started guide on the ECS console:
-#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
-#    Replace the value of the `ECS_SERVICE` environment variable in the workflow below with the name you set for the Amazon ECS service.
-#    Replace the value of the `ECS_CLUSTER` environment variable in the workflow below with the name you set for the cluster.
-#
-# 3. Store your ECS task definition as a JSON file in your repository.
-#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
-#    Replace the value of the `ECS_TASK_DEFINITION` environment variable in the workflow below with the path to the JSON file.
-#    Replace the value of the `CONTAINER_NAME` environment variable in the workflow below with the name of the container
-#    in the `containerDefinitions` section of the task definition.
-#
-# 4. Store an IAM user access key in GitHub Actions secrets named `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
-#    and best practices on handling the access key credentials.
+# The requirements to use this workflow are the same as those documented in aws-deploy.yml.
 
 name: Manual deploy existing image to Amazon ECS
 
+# Only build when manually triggered
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - prod
+      commit_id:
+        description: 'Container image (commit ID) to deploy'
+        required: true
+        type: string
 
 env:
   AWS_REGION: eu-west-2
   ECR_REPOSITORY: hello-world-ecr
   ECS_SERVICE: hello-world-service
   ECS_CLUSTER: hello-world-cluster
-  ECS_TASK_DEFINITION: ecs/task_definition.json
+  ECS_TASK: hello-world-task
+  ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition_template.json
+  ECS_TASK_DEFINITION_VARS_STAGING: ecs/staging_container_env_vars
+  ECS_TASK_DEFINITION_VARS_PROD: ecs/prod_container_env_vars
   CONTAINER_NAME: hello-world-container
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.commit_id }}
+
+    - name: Set environment variables based on branch
+      # Because we don't have access to the GitHub Enterprise _environments_ feature, we work around this by using the logic below
+      # to set environment variables (including AWS credentials) based on what branch triggered the build.
+      #
+      # To make the environment variables available to subsequent steps we must write them to the GITHUB_ENV environment file
+      # The CONTAINER_VARS multi-line string is set as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+      run: |
+        if [[ "${{ github.event.inputs.environment }}" == "prod" ]]; then
+          echo "Setting up env vars for Prod"
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
+          cat {{ env.ECS_TASK_DEFINITION_VARS_PROD }} >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+        elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+          echo "Setting up env vars for Staging"
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
+          cat {{ env.ECS_TASK_DEFINITION_VARS_STAGING }} >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+        else
+          echo "ERROR - Unrecognised git ref. Couldn't set env vars."
+          exit 1
+        fi
 
     - name: Configure AWS credentials
+      id: aws-login
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
+    - name: Render Amazon ECS task definition from template in repo
+      id: render-task-def
+      uses: danielr1996/envsubst-action@1.0.0
+      env:
+        # Get AWS account number based on our AWS credentials
+        AWS_ACCOUNT_ID: ${{ steps.aws-login.outputs.aws-account-id }}
+      with:
+        input: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}
+        output: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
+
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        task-definition: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
         container-name: ${{ env.CONTAINER_NAME }}
-        image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.ref_name }}
+        image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.event.inputs.commit_id }}
+        # Container environment vars are loaded from a file in the repo
+        environment-variables: ${{ env.CONTAINER_VARS }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1

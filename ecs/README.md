@@ -1,5 +1,26 @@
-# ECS Task Definition
+# ECS Task Definition and Container Env Vars
 
-This template task definition is used by the GitHub Actions workflows. The workflows populate the `image` field with the location of the desired container in ECR, and then update the ECS service to use the new task definition.
+These templates are used by the GitHub Actions workflow to render the task definition which is used for deployments to the ECS Service.
 
-In it's current form, this template should work with the sample application and CFN provided in this repository.  However there are many parameters in this template which should be customised based on your application.
+The following steps are taken:
+
+## Task Definition Variables
+
+Any variables in `task_definition_template.json` in the format `${FOOBAR}` are replaced with the value of the variable `FOOBAR` from the GitHub workflow. This is useful for specifying various things like the container name, the AWS logs group and region, the name of the execution IAM Role.
+
+## Container Environment Variables
+
+Any variables you wish to pass to the container should be specified in the environment-specific files `prod_container_env_vars` and `staging_container_env_vars`.  The GitHub workflow will add the variables from these files into the task definition at the path `.containerDefinitions[0].environment`.
+
+Variables should be specified in the files in the following format:
+
+```bash
+ENVIRONMENT=staging
+FOO=bar
+```
+
+These will be converted to the correct JSON format when added to the task definition.
+
+## Docker image
+
+The URL for to the newly built docker image in ECR is added to the task definition at the path `.containerDefinitions[0].image`.
