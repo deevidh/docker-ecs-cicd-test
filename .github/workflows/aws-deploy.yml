@@ -81,7 +81,7 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
-          cat {{ env.ECS_TASK_DEFINITION_VARS_PROD }} >> $GITHUB_ENV
+          cat ${{ env.ECS_TASK_DEFINITION_VARS_PROD }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
         elif [[ $GITHUB_REF_NAME == "staging" ]]; then
@@ -89,7 +89,7 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
-          cat {{ env.ECS_TASK_DEFINITION_VARS_STAGING }} >> $GITHUB_ENV
+          cat ${{ env.ECS_TASK_DEFINITION_VARS_STAGING }} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
         else
