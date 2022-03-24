@@ -39,13 +39,13 @@
 #    See the documentation for each action used below for the recommended IAM policies for this IAM user,
 #    and best practices on handling the access key credentials.
 
-name: Build and Deploy to Amazon ECS (staging)
+name: Staging - Build and Deploy to Amazon ECS
 
 # Trigger build for all commits on staging branch
 on:
   push:
-    branches:
-      - staging
+    tags:
+      - '*'
 
 env:
   AWS_REGION: eu-west-2
