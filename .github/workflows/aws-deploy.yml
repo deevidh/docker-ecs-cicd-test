@@ -74,23 +74,18 @@ jobs:
       # to set environment variables (including AWS credentials) based on what branch triggered the build.
       #
       # To make the environment variables available to subsequent steps we must write them to the GITHUB_ENV environment file
-      # The CONTAINER_VARS multi-line string is set as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
       run: |
         if [[ $GITHUB_REF_NAME == "main" ]]; then
           echo "Setting up env vars for Prod"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
-          cat ${{ env.ECS_TASK_DEFINITION_VARS_PROD }} >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "ECS_TASK_DEFINITION_VARS=${{ env.ECS_TASK_DEFINITION_VARS_PROD }}" >> $GITHUB_ENV
 
         elif [[ $GITHUB_REF_NAME == "staging" ]]; then
           echo "Setting up env vars for Staging"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
-          cat ${{ env.ECS_TASK_DEFINITION_VARS_STAGING }} >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "ECS_TASK_DEFINITION_VARS=${{ env.ECS_TASK_DEFINITION_VARS_STAGING }}" >> $GITHUB_ENV
 
         else
           echo "ERROR - Unrecognised git ref. Couldn't set env vars."
@@ -113,7 +108,7 @@ jobs:
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        IMAGE_TAG: ${{ github.sha }} # FIXME - Use commit ID rather than branch name?
+        IMAGE_TAG: ${{ github.sha }}
       working-directory: ./application
       run: |
         # Build a docker container and
@@ -132,6 +127,13 @@ jobs:
       with:
         input: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}
         output: ${{ env.ECS_TASK_DEFINITION_TEMPLATE }}.rendered.json
+
+    - name: Load container environment variables from file
+      # The CONTAINER_VARS multi-line string is set as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+      run: |
+        echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
+        cat ${{ env.ECS_TASK_DEFINITION_VARS }} >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
