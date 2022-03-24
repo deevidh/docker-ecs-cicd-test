@@ -46,9 +46,6 @@ on:
   push:
     branches:
       - main
-    # Pattern matched against refs/tags
-    tags:
-      - '*'
 
 env:
   AWS_REGION: eu-west-2
@@ -65,13 +62,15 @@ env:
 jobs:
   deploy:
     name: Build and Deploy
-    if: ${{ github.ref_type == 'tag' && github.event.base_ref=='refs/heads/main' }}
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Print all env vars
+      run: |
+        env
 
     - name: Configure AWS credentials
       id: aws-login
