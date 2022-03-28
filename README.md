@@ -4,11 +4,19 @@ Repository to test using GitHub Actions to build a simple docker application, pu
 
 Some further documentation can be found in the subdirectories.
 
-## GitHub Actions workflow
+## GitHub Actions workflows
+
+### Build and Deploy to Amazon ECS
 
 - Any commits made to the `staging` branch will trigger a build and the application will be immediately deployed to the staging environment.
 - Any commits made to the `main` branch will trigger a build and the application will be immediately deployed to the prod environment.
 - Branch protection rules are in place so that commits can only be made to the master branch via a pull request. Status checks are required to pass before merging, so this means the only way to deploy to Prod is by building and deploying in staging, and then completing a pull request to the main branch.
+- See the comments in the workflow file for more info.
+
+### Manual deploy existing image to Amazon ECS
+
+- This workflow can be triggered manually, and allows a previously built commit (ie container image) to be redeployed to the ECS cluster. This is useful for rolling back.
+- See the comments in the workflow file for more info.
 
 ## To deploy
 
