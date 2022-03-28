@@ -56,8 +56,8 @@ env:
   ECS_CLUSTER: hello-world-cluster
   ECS_TASK: hello-world-task
   ECS_TASK_DEFINITION_TEMPLATE: ecs/task_definition_template.json
-  ECS_TASK_DEFINITION_VARS_STAGING: ecs/staging_container_env_vars
-  ECS_TASK_DEFINITION_VARS_PROD: ecs/prod_container_env_vars
+  CONTAINER_VARS_FILE_STAGING: ecs/staging_container_env_vars
+  CONTAINER_VARS_FILE_PROD: ecs/prod_container_env_vars
   CONTAINER_NAME: hello-world-container
 
 jobs:
@@ -79,13 +79,13 @@ jobs:
           echo "Setting up env vars for Prod"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.PROD_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "ECS_TASK_DEFINITION_VARS=${{ env.ECS_TASK_DEFINITION_VARS_PROD }}" >> $GITHUB_ENV
+          echo "CONTAINER_VARS_FILE=${{ env.CONTAINER_VARS_FILE_PROD }}" >> $GITHUB_ENV
 
         elif [[ $GITHUB_REF_NAME == "staging" ]]; then
           echo "Setting up env vars for Staging"
           echo "AWS_ACCESS_KEY_ID=${{ secrets.STAGING_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-          echo "ECS_TASK_DEFINITION_VARS=${{ env.ECS_TASK_DEFINITION_VARS_STAGING }}" >> $GITHUB_ENV
+          echo "CONTAINER_VARS_FILE=${{ env.CONTAINER_VARS_FILE_STAGING }}" >> $GITHUB_ENV
 
         else
           echo "ERROR - Unrecognised git ref. Couldn't set env vars."
@@ -132,7 +132,7 @@ jobs:
       # The CONTAINER_VARS multi-line string is set as per https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
       run: |
         echo "CONTAINER_VARS<<EOF" >> $GITHUB_ENV
-        cat ${{ env.ECS_TASK_DEFINITION_VARS }} >> $GITHUB_ENV
+        cat ${{ env.CONTAINER_VARS_FILE }} >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
 
     - name: Fill in the new image ID in the Amazon ECS task definition
