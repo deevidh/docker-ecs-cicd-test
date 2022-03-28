@@ -1,6 +1,6 @@
 # docker-ecs-cicd-test
 
-Repository to test using GitHub Actions to build a simple docker application, push it to ECR, and then deploy to ECS.
+This repository tests using GitHub Actions to build a simple docker application, push it to ECR, scan for security vulnerabilities using Trivy, then render a new a ECS task definition and use it to deploy an ECS Service.
 
 Some further documentation can be found in the subdirectories.
 
@@ -22,7 +22,7 @@ Some further documentation can be found in the subdirectories.
 
 1. Fork this repository
 2. Install and configure the AWS CLI ([AWS docs here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-prereqs.html))
-3. Deploy the ECS cluster using CloudFormation
+3. Deploy the ECS cluster using CloudFormation (I suggest deploying to the staging AWS account first)
 
     ```bash
     cd cfn/
@@ -32,11 +32,13 @@ Some further documentation can be found in the subdirectories.
     aws cloudformation deploy --template-file ecs-cluster.yaml --stack-name hello-world-ecs-cluster --parameter-overrides file://parameters.json --capabilities CAPABILITY_NAMED_IAM
     ```
 
-4. Push a git tag to GitHub to trigger the workflow
+4. Check out the staging branch and push a commit to GitHub to trigger the workflow
 
     ```bash
-    git tag v0.0
-    git push origin v0.0
+    git checkout staging
+    # Make some changes and stage them
+    git commit -m "Committing new feature to staging"
+    git push -u origin staging
     ```
 
 5. Check the GitHub workflow output. You should see that it failed with `Error: arn:aws:ecs:eu-west-2:***:service/hello-world-service is MISSING`.  However the container image should have been pushed to ECR, and the task definition should have been created.
@@ -52,6 +54,8 @@ Some further documentation can be found in the subdirectories.
     ```bash
     aws cloudformation describe-stacks --stack-name ecs-test-cluster --query "Stacks[0].Outputs[?OutputKey=='ServiceUrl'].OutputValue" --output text
     ```
+
+9. Repeat steps 3 - 8 for the production AWS account and `master` branch
 
 ## Other useful resources
 

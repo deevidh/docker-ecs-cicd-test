@@ -1,5 +1,5 @@
 # Whenever a commit is pushed to the `main` or `staging` branches, this workflow will build and push a new container image to Amazon ECR,
-# and then deploy an updated task definition to Amazon ECS and update the ECS service .
+# scan it for security vulnerabilities using Trivy, and then deploy an updated task definition to Amazon ECS and update the ECS service.
 #
 # The workflow deploys to different AWS Accounts (prod, staging) depending on what branch triggered the build (master, staging).
 #
@@ -117,6 +117,18 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
         docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+    - name: Scan container image for vulnerabilities using Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ steps.build-image.outputs.image }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: 'trivy-results.sarif'
 
     - name: Render Amazon ECS task definition from template in repo
       id: render-task-def
