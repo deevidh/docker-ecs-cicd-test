@@ -2,7 +2,7 @@
 
 Repository to test using GitHub Actions to build a simple docker application, push it to ECR, and then deploy to ECS.
 
-Further documentation can be found in each subdirectory.
+Some further documentation can be found in the subdirectories.
 
 ## To deploy
 
