@@ -4,6 +4,12 @@ Repository to test using GitHub Actions to build a simple docker application, pu
 
 Some further documentation can be found in the subdirectories.
 
+## GitHub Actions workflow
+
+- Any commits made to the `staging` branch will trigger a build and the application will be immediately deployed to the staging environment.
+- Any commits made to the `main` branch will trigger a build and the application will be immediately deployed to the prod environment.
+- Branch protection rules are in place so that commits can only be made to the master branch via a pull request. Status checks are required to pass before merging, so this means the only way to deploy to Prod is by building and deploying in staging, and then completing a pull request to the main branch.
+
 ## To deploy
 
 1. Fork this repository
