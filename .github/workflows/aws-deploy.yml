@@ -25,7 +25,7 @@
 #    Replace the value of the `ECS_TASK` environment variable in the workflow below with the name you wish to use for the task definition family.
 #
 # 4. Store environment specific variables you wish to pass to your container in files in your repository.
-#    Replace the value of `ECS_TASK_DEFINITION_VARS_STAGING` and `ECS_TASK_DEFINITION_VARS_PROD` in the workflow below with the paths
+#    Replace the value of `CONTAINER_VARS_FILE_STAGING` and `CONTAINER_VARS_FILE_PROD` in the workflow below with the paths
 #    to these files. The files should contain a list of the environment variables you wish to pass to the container (these will be added
 #    to the task definition).  For example:
 #    ```
