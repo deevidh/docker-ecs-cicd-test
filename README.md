@@ -1,6 +1,6 @@
 # docker-ecs-cicd-test
 
-Repository to test using GitHub Actions to build a simple docker application, push it to ECR, and then deploy to ECS.
+This repository tests using GitHub Actions to build a simple docker application, push it to ECR, scan for security vulnerabilities using Trivy, then render a new a ECS task definition and use it to deploy an ECS Service.
 
 Some further documentation can be found in the subdirectories.
 
